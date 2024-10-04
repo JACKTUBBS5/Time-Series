@@ -1,0 +1,52 @@
+---
+title: "Tubbs modification of Sec1p1plots"
+author: "jdt"
+date: "2024-10-02"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+```{r }
+require("astsa")
+par(pch = 20)
+#  Figure 1.1, p. 2
+plot(jj, type = "o", ylab = "Quarterly Earnings per Share")
+#  Figure 1.2, p. 3
+#  NOTE: dataset name as it appears in text has changed from globtemp
+#        to gtemp_both.
+plot(gtemp_both, type = "o", ylab = "Global Temperature Deviations")
+#  Figure 1.3, p. 4
+plot(speech, ylab = "Speech Signal for AAAHHH")
+#  Figure 1.4, p. 4
+require("xts")
+djiar = diff(log(djia$Close))[-1]
+plot(djiar, type = "n", main = "DJIA Returns")
+lines(djiar)
+
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+#  Figure 1.5, p. 6
+par(mfrow = c(2, 1))
+plot(soi, ylab = "", xlab = "", main = "Southern Oscillation Index")
+plot(rec, ylab = "", xlab = "", main = "Recruitment")
+#  Figure 1.6, p. 7
+#par(mfrow = c(2, 1))
+ts.plot(fmri1[,2:5], col = 1:4, xlab = "", ylab = "BOLD", main = "Cortex")
+ts.plot(fmri1[,6:9], col = 1:4, xlab = "Time (1 pt = 2 sec)", ylab = "BOLD", main = "Thalamus & Cerebellum")
+# Figure 1.7, p. 8
+#par(mfrow = c(2, 1))
+plot(EQ5, xlab = "", main = "Earthquake")
+lines(c(1024, 1024), c(min(EQ5), max(EQ5)), lty = 2)
+plot(EXP6, main = "Explosion")
+lines(c(1024, 1024), c(min(EXP6), max(EXP6)), lty = 2)
+
+```
