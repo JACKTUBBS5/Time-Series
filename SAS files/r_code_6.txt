@@ -1,0 +1,52 @@
+diff_example_1<-function(order)
+  {
+     t<-1:200
+     temp<- arima.sim(list(order = c(1,1,0), ar = 0.7), n = 199)  #ARIMA(1,1,0)
+     x<- 50*temp + 100 + 2*t            # time series plus linear trend
+     x1<-diff.ts(x,lag=1,differences=1)
+     x2<-diff.ts(x,lag=1,differences=2)
+     if(order == 0) tsplot2(x)
+     else
+       if(order == 1) tsplot2(x1)
+       else tsplot2(x1)
+  }
+
+diff_example_2<-function(order)
+  {
+     t<-1:200
+     temp<- arima.sim(list(order = c(1,1,0), ar = 0.7), n = 199)  #ARIMA(1,1,0)
+     x<- 50*temp + 100 - .002*(t^2)            # time series plus quadratic trend
+     x1<-diff.ts(x,lag=1,differences=1)
+     x2<-diff.ts(x,lag=1,differences=2)
+     if(order == 0) tsplot2(x)
+     else
+       if(order == 1) tsplot2(x1)
+       else tsplot2(x1)
+  }
+
+ diff_example_3<-function(order)
+  {
+     t<-1:200
+     temp<- arima.sim(list(order = c(0,0,0)), n = 199)
+     x<- 50*temp + 100      # time series white noise
+     x1<-diff.ts(x,lag=1,differences=1)
+     x2<-diff.ts(x,lag=1,differences=2)
+     if(order == 0) tsplot2(x)
+     else
+       if(order == 1) tsplot2(x1)
+       else tsplot2(x1)
+  }
+ #example number 1
+ diff_example_1(0)
+ diff_example_1(1)
+ diff_example_1(2)
+
+ temp<- arima.sim(list(order = c(1,0,0),ar=.8),  n=199,
+       +  rand.gen = function(n, ...) rpois(199,10))
+       t<-1:370
+       boxcox(temp ~ t, lambda = seq(-1, 2, 1/10))
+
+x<-arima.fracdiff.sim(model = list(d = .3, ar = .2, ma = .4), n = 1000)
+ timeplot(x, c(2,2), 'Long Memory Series')
+ arima.fracdiff(x, model = list(ar = NA, ma = NA))
+

@@ -1,0 +1,160 @@
+Chapter 1
+
+random.walk<-function{
+  par(mfrow=c(2,2))
+  x1<- cumsum(2*rbinom(100,1,.5) - 1)
+  x2<- cumsum(2*rbinom(100,1,.5) - 1)
+  x3<- cumsum(2*rbinom(100,1,.5) - 1)
+  x4<- cumsum(2*rbinom(100,1,.5) - 1)
+  ts.plot(x1);title('Random Walks')
+  ts.plot(x2)
+  ts.plot(x3)
+  ts.plot(x4)
+ }
+
+  x<-rnorm(200)
+   timeplot(x,c(2,2),'White Noise')
+
+timeplot<-function(x, span, tname)
+  {
+     par(mfrow=c(2,2))
+     ts.plot(x);title(tname)
+     cpgram(x)
+     acf(x)
+     acf(x, type='partial')
+  }
+ x<-arima.sim(list(order=c(1,0,0), ar=.8), n=200)
+ timeplot(x,c(2,2),'AR(1), phi = .8')
+ x<-arima.sim(list(order=c(1,0,0), ar=-.8), n=200)
+ timeplot(x,c(2,2),'AR(1), phi = -.8')
+
+x<-arima.sim(list(order=c(0,0,1), ma=.8), n=200)
+ timeplot(x,c(2,2),'MA(1), theta = .8')
+ x<-arima.sim(list(order=c(0,0,1), ma=-.8), n=200)
+ timeplot(x,c(2,2),'MA(1), theta = -.8')
+
+Chapter 2
+specplot <- function(x,ntitle)
+{
+   par(mfrow=c(2,2))
+   spectrum(x);title(ntitle)
+   spectrum(x, spans=3)
+   spectrum(x, spans=c(3,3))
+   spectrum(x, spans=c(3,5))
+ }
+  wn<-rnorm(200)
+  specplot(wn,'')
+  specplot(x,'')
+
+
+x<-arima.sim(list(order=c(1,0,0), ar=.9), n=200)
+ tsplot(x,c(3,3))
+ x<-arima.sim(list(order=c(1,0,0), ar=-.9), n=200)
+ tsplot(x,c(3,3))
+ z<-arima.sim(list(order=c(0,1,0)), n=200)
+ tsplot(z,c(3,3))
+
+
+ x<-arima.sim(list(order=c(2,0,0), ar=c(.25,.5)), n=200)
+  tsplot(x,span=c(3,5))
+  y<-arima.sim(list(order=c(2,0,0), ar=c(-.25,.5)), n=200)
+  tsplot(y,span=c(3,5))
+  z<-arima.sim(list(order=c(2,0,0), ar=c(1,-.5)), n=200)
+  tsplot(z,span=c(3,5))
+
+
+ x<-arima.sim(list(order=c(0,0,1), ma=.8), n=200)
+ timeplot(x,c(2,2),'MA(1), theta = .8')
+ x<-arima.sim(list(order=c(0,0,1), ma=-.8), n=200)
+ timeplot(x,c(2,2),'MA(1), theta = -.8')
+
+Chapter 3
+forecast.ex.ar1<-function(ar.parm,nobs)
+ {
+     x<- arima.sim(list(order=c(1,0,0), ar=ar.parm),n=nobs)
+     x<- x - mean(x)
+     x.arima<-arima.mle(x, model=list(order=c(1,0,0)),n.cond=3)
+     x.arima
+     x.fore<-arima.forecast(x, n=20, model=x.arima$model)
+     x.fore$mean<-x.fore$mean + mean(x)
+     x.fmean<-c(x,x.fore$mean)
+     x.low<-c(x,x.fore$mean-2*x.fore$std.err)
+     x.high<-c(x,x.fore$mean+2*x.fore$std.err)
+     ts.plot(x,x.fmean,x.low,x.high)
+ }
+ forecast.ex.ar1(.8,200)
+ title("Simulated AR(1) phi=.8")
+ forecast.ex.ar1(-.8,200)
+ title("Simulated AR(1) phi=-.8")
+
+forecast.ex.ma3<-function(ma.parm,nobs)
+ {
+     x<- arima.sim(list(order=c(0,0,3), ma=ma.parm),n=nobs) + 100
+     xt<- x - mean(x)
+     x.arima<-arima.mle(xt, model=list(order=c(0,0,3)),n.cond=3)
+     x.arima
+     x.fore<-arima.forecast(xt, n=20, model=x.arima$model)
+     x.fore$mean<-x.fore$mean + mean(x)
+     x.fmean<-c(x,x.fore$mean)
+     x.low<-c(x,x.fore$mean-2*x.fore$std.err)
+     x.high<-c(x,x.fore$mean+2*x.fore$std.err)
+     ts.plot(x,x.fmean,x.low,x.high)
+ }
+ forecast.ex.ma3(c(1.2,-.4,1.8),200)
+ title("Simulated MA(3)")
+
+Chapter 6
+diff_example_1<-function(order)
+  {
+     t<-1:200
+     temp<- arima.sim(list(order = c(1,1,0), ar = 0.7), n = 199)  #ARIMA(1,1,0)
+     x<- 50*temp + 100 + 2*t            # time series plus linear trend
+     x1<-diff.ts(x,lag=1,differences=1)
+     x2<-diff.ts(x,lag=1,differences=2)
+     if(order == 0) tsplot2(x)
+     else
+       if(order == 1) tsplot2(x1)
+       else tsplot2(x1)
+  }
+
+diff_example_2<-function(order)
+  {
+     t<-1:200
+     temp<- arima.sim(list(order = c(1,1,0), ar = 0.7), n = 199)  #ARIMA(1,1,0)
+     x<- 50*temp + 100 - .002*(t^2)            # time series plus quadratic trend
+     x1<-diff.ts(x,lag=1,differences=1)
+     x2<-diff.ts(x,lag=1,differences=2)
+     if(order == 0) tsplot2(x)
+     else
+       if(order == 1) tsplot2(x1)
+       else tsplot2(x1)
+  }
+
+ diff_example_3<-function(order)
+  {
+     t<-1:200
+     temp<- arima.sim(list(order = c(0,0,0)), n = 199)
+     x<- 50*temp + 100      # time series white noise
+     x1<-diff.ts(x,lag=1,differences=1)
+     x2<-diff.ts(x,lag=1,differences=2)
+     if(order == 0) tsplot2(x)
+     else
+       if(order == 1) tsplot2(x1)
+       else tsplot2(x1)
+  }
+ #example number 1
+ diff_example_1(0)
+ diff_example_1(1)
+ diff_example_1(2)
+
+ temp<- arima.sim(list(order = c(1,0,0),ar=.8),  n=199,
+       +  rand.gen = function(n, ...) rpois(199,10))
+       t<-1:370
+       boxcox(temp ~ t, lambda = seq(-1, 2, 1/10))
+
+x<-arima.fracdiff.sim(model = list(d = .3, ar = .2, ma = .4), n = 1000)
+ timeplot(x, c(2,2), 'Long Memory Series')
+ arima.fracdiff(x, model = list(ar = NA, ma = NA))
+
+
+
