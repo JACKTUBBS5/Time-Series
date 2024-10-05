@@ -1,0 +1,91 @@
+#Ch2_S+ assumes you know the stuff in Ch1_S+ and the Intro.
+
+
+
+# Simulate ARMA(1,1), get ACF and PACF
+# S+ writes model as x(t)=ax(t-1)+w(t)-bw(t-1) [i.e. minus coef on MA]
+
+> par(mfrow=c(3,1)) 
+> ARMA_rts(arima.sim(list(order=c(1,0,1), ar = 0.7, ma = -0.5), n=200))
+> ts.plot(ARMA, main="ARMA(1,1) phi(1) = 0.7 theta(1) = -0.5")
+> acf(ARMA)
+> acf(ARMA, type = "partial")
+
+
+# fit recruits
+> rec_scan("c:\\tsdata\\rec.dat")
+> x_rts(rec)   # x is the time series object
+> par(mfrow=c(3,1))
+> ts.plot(x, main="Recruits (x)")
+> acf(x)
+> acf(x,type="partial")
+#indicates AR(2) fit  but we'll also fit an ARMA(1,1)
+# first Yule-Walker to fit AR(2)
+> rec.ar2_ar(x, order.max = 2)
+# type 
+> help(ar) #to see what you get, e.g.
+> rec.ar2$ar  #gives parameters
+> rec.ar2$aic # gives AIC from lag 0 to order.max
+# now the MLE 
+> help(arima.mle) # for details
+# NOTE arima.mle DOES NOT FIT A CONSTANT - IT ASSUMES MEAN=0
+> x_x-mean(x)  #subtract mean
+> rec.ar2mle_arima.mle(x, model=list(order=c(2,0,0)), n.cond = 2)
+# some results
+> rec.ar2mle$model
+> rec.ar2mle$var.coef
+> rec.ar2mle$aic
+> rec.ar2mle$sigma2
+
+
+# Diagnostics
+> arima.diag(rec.ar2mle)
+
+# now the ARMA(1,1) fit
+> rec.arma_arima.mle(x, model=list(order=c(1,0,1)), n.cond = 2)
+> rec.arma$model
+$order:
+[1] 1 0 1
+
+$ar:
+[1] 0.9783337
+
+$ndiff:
+[1] 0
+
+$ma:
+[1] -0.3929942
+
+> rec.arma$var.coef
+              ar(1)         ma(1) 
+ar(1) 0.00009687183 0.00005916339
+ma(1) 0.00005916339 0.00191097934
+
+> rec.arma$aic
+[1] 3355.427
+
+
+# Forecast 12 time units ahead for AR(2) model
+> rec.ar2.fore_arima.forecast(x,n=12,model=rec.ar2mle$model)
+> cbind(rec.ar2.fore$mean,rec.ar2.fore$std.err)
+> par(mfrow=c(1,1))
+> ts.plot(x,rec.ar2.fore$mean,rec.ar2.fore$mean+2*rec.ar2.fore$std.err,
+	rec.ar2.fore$mean-2*rec.ar2.fore$std.err)
+
+
+# Fit an ARIMA(1,1,0)x(0,1,1)12 to the Production Series
+> prod_rts(scan("c:\\tsdata\\prod.dat"))
+> prod.mod_list(list(order=c(1,1,0)), list(order=c(0,1,1), period=12))
+> fit_arima.mle(prod, model=prod.mod)
+
+
+#===LONG MEMORY  ARFIMA Models =====
+# generate a fractionally-differenced ARIMA(1,d,1) model given initial values
+> ts.sim_arima.fracdiff.sim(model = list(d=.3, ar=.2, ma=.4), n = 3000)
+
+# estimate the parameters in an ARIMA(1,d,1) model for the simulated series
+> arima.fracdiff(ts.sim, model = list(ar = NA, ma = NA)) 
+
+
+
+

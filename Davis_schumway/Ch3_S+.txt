@@ -1,0 +1,68 @@
+# Ch3_S+
+
+> # generate time series with 3 cycles
+> t_1:128
+> x1_2*cos(2*pi*t*6/128) +3*sin(2*pi*t*6/128)
+> x2_4*cos(2*pi*t*10/128) + 5*sin(2*pi*t*10/128)
+> x3_3*cos(2*pi*t*40/128) + 4*sin(2*pi*t*40/128)
+> x_x1+x2+x3
+> min(x)
+[1] -15.36613
+> max(x)
+[1] 13.88798
+> win.graph()
+> par(mfrow=c(2,2))
+> tsplot(x1,main="nu=6/128, amp^2=13", ylim=c(-16,16))
+# in above amp^2=2^2+3^3=13 is the square of the amplitude
+> tsplot(x2,main="nu=10/128, amp^2=41", ylim=c(-16,16))
+> tsplot(x3,main="nu=40/128, amp^2=25", ylim=c(-16,16))
+> tsplot(x,main="sum", ylim=c(-16,16))
+
+# the periodogram of x
+> par(mfrow=c(1,1))
+> d_fft(x)/length(x)
+> per_abs(d)^2
+> freq_(0:64)/128
+> per_per[1:65]
+> plot(freq,per,type="l")
+
+
+# try it this way 
+> spectrum(x, method="pgram", plot=T)
+# what is that? 
+# ok try this
+> spec.pgram(x, detrend=F, demean=F, plot=T)
+# Note dB=decibel, and the value S in dBs is  10log_10 S
+
+# spectrum of recruits
+> help(spec.pgram) # to get details
+# see the difference
+> par(mfrow=c(2,2))
+> spec.pgram(rec, spans=1, taper=0.1, pad=0, detrend=F, demean=T, plot=T)
+> spec.pgram(rec, spans=3, taper=0.1, pad=0, detrend=F, demean=T, plot=T)
+> spec.pgram(rec, spans=c(3,3), taper=0.1, pad=0, detrend=F, demean=T, plot=T)
+> spec.pgram(rec, spans=c(3,5), taper=0.1, pad=0, detrend=F, demean=T, plot=T)
+# note spectrum() does the same thing as spec.pgram
+
+# AR spectral estimate for recruits
+> rec.ar <- ar(rec)          # Fit an AR model using AIC
+> rec.ar$aic             # to see which model is chosen (p=13)
+> par(mfrow=c(1,1))
+> rec.arspec <- spec.ar(rec.ar,plot=T) #  superimpose the AR spectrum for this
+> rec.per <- spec.pgram(rec)          # data and its periodogram.  
+> spec.plot(rec.per, add=T)
+
+
+# Coherency between SOI and Recruits
+> x1_matrix(soi)
+> x2_matrix(rec)
+> x_cbind(x1,x2)
+> spec_spec.pgram(x, spans=c(3,5), taper=0.1, pad=0, detrend=F, demean=T, plot=T)
+> rho_spec$coh
+> length(rho)
+[1] 229
+> length(x1)
+[1] 453
+> freq_(0:length(rho)-1)/length(x1)
+> plot(freq,rho,type="l")
+

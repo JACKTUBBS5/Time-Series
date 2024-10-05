@@ -1,0 +1,242 @@
+# Using S+ in Chapter 1
+
+# Start her up ... I have an old Windows version as you can see.
+The > is the Splus prompt (i.e. you don't type >)
+
+S-PLUS : Copyright 1988, 1994 MathSoft, Inc.
+S : Copyright AT&T.
+Version 3.2 Release 1 for MS Windows 3.1 : 1994 
+Working data will be in _Data 
+
+# open graphics device (you don't need this with version 4+)
+> win.graph()
+
+# read jj.dat which is in my directory c:\tsdata
+> x_scan("c:\\tsdata\\jj.dat")
+
+# you can make x a regular time series object
+> x_rts(x)
+
+# to see your objects just type
+> objects()
+
+# plot the data
+> tsplot(x, xlab="Quarter", ylab="J&J Earning Per Share")
+
+# log and plot
+> x.log_log(x)
+> tsplot(x.log, xlab="Quarter", ylab="Log of J&J Earning Per Share")
+
+# log, difference and plot
+> dx_diff(x.log)
+> tsplot(dx, xlab="Quarter", ylab="J&J Earning Per Share Growth Rate")
+
+# all 3 plots - one on top of the other
+> par(mfrow=c(3,1)) 
+> tsplot(x, xlab="Quarter", ylab="J&J Earning Per Share")
+> tsplot(x.log, xlab="Quarter", ylab="Log of J&J Earning Per Share")
+> tsplot(dx, xlab="Quarter", ylab="J&J Earning Per Share Growth Rate")
+
+# Detrend & Regression        
+> z_1:length(x.log)
+> fit_lm(x.log~z)
+> par(mfrow=c(1,1))
+> min(x.log)
+[1] -0.8209806
+> max(x.log)
+[1] 2.785011
+> tsplot(x.log, xlab="Quarter", ylab="Log of J&J Earning Per Share",ylim=c(-1,3) )
+> par(new=T)
+> x.hat <- fit$fitted
+> tsplot(x.hat, xlab="", ylab="", ylim=c(-1,3))  # both lines on plot
+#detrended series
+> dt_x.log-x.hat     
+> tsplot(dt)
+# compare difference with detrended data
+> par(mfrow=c(2,1))
+> acf(dx)           # remember dx_diff(x.log)
+> acf(dt)
+# matrix of plots of dx(t) vs dx(t-h) for h=1,2,...,9
+> lag.plot(dx, lags=9, layout=c(3,3)) 
+
+ # dummy variable regression
+> u_matrix(contr.sum(4, contrasts=F),4,84)  # matrix of dummy variables
+> u_t(u)               # transpose
+> fit_lm(x.log~z + u[,1:3])     # fit on 3 cols of dummy
+> summary(fit)   # get details of the regression
+> noise <- fit$residuals  # get residuals  
+> acf(noise)
+> tsplot(noise)
+
+ # Two series   SOI and Recruits  
+> soi_scan("c:\\tsdata\\soi.dat")
+> rec_scan("c:\\tsdata\\recruit.dat")
+> par(mfrow=c(2,1))
+> tsplot(soi)
+> tsplot(rec)
+> acf(cbind(soi,rec))  # ACFs and CCF
+> pairs.default(cbind(soi,rec))  # scatter plot matrix
+
+# Regr one series on another [rec(t) on soi(t-6)]
+
+> x1_rts(soi)
+> x2_rts(rec)
+> u_ts.intersect(lag(x2,6), x1)   #col 1 of u is rec(t+6), col 2 is soi(t)
+> cor(u)
+           lag(x2, 6)         x1 
+lag(x2, 6)  1.0000001 -0.6024526
+        x1 -0.6024526  1.0000001
+
+> fit_lm(u[,1]~u[,2])
+> summary(fit)
+
+Call: lm(formula = u[, 1] ~ u[, 2])
+Residuals:
+    Min     1Q Median    3Q   Max 
+ -65.19 -18.23 0.3538 16.58 55.79
+
+Coefficients:
+               Value Std. Error  t value Pr(>|t|) 
+(Intercept)  65.7898   1.0880    60.4687   0.0000
+     u[, 2] -44.2826   2.7811   -15.9227   0.0000
+
+Residual standard error: 22.5 on 445 degrees of freedom
+Multiple R-Squared: 0.3629 
+F-statistic: 253.5 on 1 and 445 degrees of freedom, the p-value is 0 
+
+
+# simulate white Gaussian noise and 3pt MA
+# two graphs one on top of other
+
+> win.graph()
+> x_rnorm(250, mean=0, sd=1)
+> x.fil_filter(x, c(1,1,1)/3)
+> par(mfrow=c(2,1))
+> tsplot(x)
+> tsplot(x.fil)
+
+# plot of data with MA superimposed
+> par(mfrow=c(1,1))
+> t_1:length(x)
+> plot(t,x)
+> lines(x.fil)
+
+
+
+#  AR(2) simulation
+> ar2.sim <- arima.sim(list(order=c(2,0,0), ar = c(1,-.9)), n=250)
+> par(mfrow=c(2,1))
+> tsplot(ar2.sim, main="AR2 Simulation")
+> acf(ar2.sim)
+
+
+# Random walk simulation
+> par(mfrow=c(2,2))
+> w_rnorm(250, mean=0, sd=1)
+> x_cumsum(w)
+> tsplot(x, main="Random Walk")
+> acf(x)
+> xd_diff(x)
+> tsplot(xd,main="Differenced")
+> acf(xd)
+
+# Cosine signal plus noise
+> par(mfrow=c(2,2))
+> t_1:200
+> x_sqrt(2)*cos(2*pi*t/50)
+> w_rnorm(200,0,1)
+> tsplot(x, main="Sinusoid (one cylce every 50 points)")
+> tsplot(x+w, main="SNR=1")
+> tsplot(x+2*w, main="SNR=1/2")
+> tsplot(x+4*w, main="SNR=1/16")
+NOTES:
+# SNR signal-to-noise ratio = var(signal)/var(noise)
+# Here var(x)=sum(x^2)/n, in this case n=200
+  #  and sum[cos(2*pi*nu*t)^2]=n/2  except when nu=0 or n/2
+  #  Here nu=1/50  so in this example
+  #  var(signal)/var(noise) = 1/1, 1/4 and 1/16
+# check the sample values
+> var(x)/var(w)
+[1] 1.006553
+> var(x)/var(2*w)
+[1] 0.2516381
+> var(x)/var(4*w)
+[1] 0.06290954
+
+
+> #modulated signal + noise
+>  w_rnorm(200,0,1)
+>  t_1:100
+>  y_cos(2*pi*t/10)
+>  e_exp(-t/50)
+>  s_c(rep(0,100),10*y*e )
+>  x_s+w
+>  par(mfrow=c(2,1))
+>  tsplot(s, main="signal")
+>  tsplot(x, main="signal+noise")
+
+
+#========================
+This is how I generated Figure 1.22
+
+
+> mortality_scan("mortal.dat")
+> postscript("c:\\graphs\\smooth1.ps")  # makes .ps file 
+> time_c(1:length(mortality))
+> par(mfrow=c(3,1)) 
+
+
+> plot(time, mortality, main="moving average")
+> filter5_filter(mortality, c(1,1,1,1,1)/5)
+> lines(time, filter5)
+> filter53_filter(mortality, rep(1,53)/53 )
+> lines(time, filter53)
+
+
+> plot(time, mortality, main="nearest neighbor")
+> lines(supsmu(time, mortality,bass=10))
+> lines(supsmu(time, mortality,span=.01))
+
+
+> plot(time, mortality, main="ksmooth")
+>  lines(ksmooth(time,mortality,"normal",bandwidth=4))
+> lines(ksmooth(time,mortality,"normal",bandwidth=100))
+
+
+#======================
+#This is how I generated Figure 1.23
+
+> graphics.off()
+> win.graph()
+> postscript("c:\\graphs\\smooth2.ps")
+
+
+> par(mfrow=c(3,1)) 
+>  plot(time, mortality, main="smoothing splines")
+> lines(smooth.spline(time,mortality),spar=.00000005)
+> lines(smooth.spline(time,mortality,spar=.1))
+
+> plot(time, mortality, main="natural splines")
+> lines(smooth.spline(time,mortality))
+> lines(smooth.spline(time,mortality,spar=0,df=10))
+
+> plot(time, mortality, main="lowess")
+> lines(lowess(time,mortality,.02))
+> lines(lowess(time,mortality))
+
+> graphics.off()
+> win.graph()
+
+#==============================
+# here's how to fit lowess to SOI vs Recruits with a lead of 6 months
+# assuming your data files are in c:\mydata
+
+ soi_scan("c:\\mydata\\soi.dat")
+ rec_scan("c:\\mydata\\recruit.dat")
+ x1_rts(soi)
+ x2_rts(rec)
+ sr_ts.intersect(x1, lag(x2,6)) 
+ SOI_sr[,1]
+ REClag6_sr[,2]
+ plot(SOI,REClag6, main="lowess")
+ lines(lowess(SOI,REClag6))
