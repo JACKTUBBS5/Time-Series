@@ -1,0 +1,19 @@
+SAS AR(1) Example
+data AR1(keep=t y);
+call streaminit(12345);
+phi = 0.7;   yLag = 0; 
+do t = -10 to &N;
+   eps = rand("Normal");                /* variance of 1            */
+   y = phi*yLag + eps;                  /* expected value of Y is 0 */
+   if t>0 then output;
+   yLag = y;
+end;
+run; 
+
+*ods graphics on;
+proc arima data=AR1;* plots=all; *plots(unpack only)=(series(corr));
+   identify var=y nlag=20;                       /* estimate AR1 lag */
+   estimate P=1 Q=1;
+*  ods select SeriesPlot ParameterEstimates FitStatistics; 
+run;
+quit;
